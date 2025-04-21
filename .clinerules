@@ -152,7 +152,7 @@ def test_myfunction(input, expected):
 - エラーメッセージは問題の原因と解決策を示す
 
 ### 3.2 推奨パッケージ
-- コマンドライン引数の解析には`click`または`argparse`を使用
+- コマンドライン引数の解析には`click`を使用
 - 設定ファイルの読み込みには`configparser`または`pyyaml`を使用
 - ログ出力には標準の`logging`モジュールを使用
 - カラー出力には`colorama`または`rich`を使用

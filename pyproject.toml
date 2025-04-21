@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clify"
-description = "OpenAPI仕様からCLIを自動生成するツール"
+description = "A tool that automatically generates CLI from OpenAPI specifications"
 readme = "README.md"
 license = { file = "LICENSE" }
 classifiers = [
@@ -38,6 +38,4 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.3.5",
-]
+dev = ["pytest>=8.3.5"]

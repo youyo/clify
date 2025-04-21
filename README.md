@@ -1,95 +1,95 @@
 # clify
 
-OpenAPI 仕様から CLI を自動生成するツール
+A tool that automatically generates CLI from OpenAPI specifications
 
-## 概要
+## Overview
 
-clify は、OpenAPI ファイルのパスを環境変数で指定して与えるだけで、その API の CLI として利用できるツールです。API の操作をコマンドラインから簡単に行うことができます。
+clify is a tool that allows you to use an API as a CLI by simply specifying the path to an OpenAPI file through an environment variable. It enables you to easily perform API operations from the command line.
 
-## 特徴
+## Features
 
-- OpenAPI 3.0/3.1 仕様をサポート
-- 環境変数で OpenAPI ファイルのパスを指定可能
-- 各 API エンドポイントに対応するサブコマンドを自動生成
-- パラメータに対応するオプションを自動生成
-- JSON レスポンスの整形表示
-- 認証情報の管理
+- Supports OpenAPI 3.0/3.1 specifications
+- Ability to specify OpenAPI file path via environment variables
+- Automatically generates subcommands corresponding to each API endpoint
+- Automatically generates options corresponding to parameters
+- Formatted display of JSON responses
+- Authentication information management
 
-## インストール
+## Installation
 
 ```bash
 pip install clify
 ```
 
-## 使い方
+## Usage
 
-### 環境変数で OpenAPI ファイルを指定
+### Specify OpenAPI file with environment variable
 
 ```bash
 export OPENAPI_FILE_PATH=/path/to/openapi.yaml
 clify
 ```
 
-### コマンドラインオプションで OpenAPI ファイルを指定
+### Specify OpenAPI file with command line option
 
 ```bash
 clify --openapi-file /path/to/openapi.yaml
 ```
 
-### URL で OpenAPI ファイルを指定
+### Specify OpenAPI file with URL
 
 ```bash
 clify --openapi-file https://example.com/api/openapi.yaml
 ```
 
-### コマンド一覧の表示
+### Display list of commands
 
 ```bash
 clify --help
 ```
 
-### 特定のコマンドのヘルプを表示
+### Display help for a specific command
 
 ```bash
 clify <command> --help
 ```
 
-### API リクエストの実行
+### Execute API request
 
 ```bash
 clify <command> [options]
 ```
 
-### サーバー URL の指定
+### Specify server URL
 
 ```bash
 clify --server https://api.example.com <command> [options]
 ```
 
-### 認証情報の指定
+### Specify authentication information
 
 ```bash
-# Basic認証
+# Basic authentication
 clify --username user --password pass <command> [options]
 
-# Bearerトークン
+# Bearer token
 clify --token your-token <command> [options]
 
-# APIキー
+# API key
 clify --api-key your-api-key <command> [options]
 ```
 
-### JSON データの送信
+### Send JSON data
 
 ```bash
 clify <command> --data '{"key": "value"}'
-# または
+# or
 clify <command> --data @file.json
 ```
 
-## 例
+## Examples
 
-### OpenAPI ファイルの例
+### Example OpenAPI file
 
 ```yaml
 openapi: 3.1.0
@@ -129,36 +129,36 @@ paths:
           description: User created
 ```
 
-### 生成される CLI
+### Generated CLI
 
 ```bash
-# ユーザー一覧を取得
+# Get list of users
 clify get-users --limit 10
 
-# 新しいユーザーを作成
+# Create a new user
 clify create-user --data '{"name": "John", "email": "john@example.com"}'
 ```
 
-## 開発
+## Development
 
-### 依存関係のインストール
+### Install dependencies
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-### テストの実行
+### Run tests
 
 ```bash
 pytest
 ```
 
-### ビルド
+### Build
 
 ```bash
 python -m build
 ```
 
-## ライセンス
+## License
 
 MIT

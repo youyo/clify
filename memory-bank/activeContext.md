@@ -5,9 +5,12 @@
 - CLI コマンド実行の問題解決完了
 - OpenAPI 2.0 サポート追加 (基本的な変換)
 - サンプル OpenAPI ファイル (v2, v3) を使った動作確認
+- プロジェクトの国際化（ドキュメントの英語化）
 
 ## 最近の変更
 
+- README.md を英語に翻訳
+- pyproject.toml の説明文を英語に翻訳
 - `src/clify/cli.py` をリファクタリング (`click.MultiCommand` 使用)
 - `src/clify/parser.py` に OpenAPI 2.0 -> 3.x 変換処理を追加
 - `tictactoe.yaml` に `servers` を追加
@@ -47,6 +50,7 @@
 2. **ドキュメントの最終確認**
    - 使用方法の説明を更新
    - 既知の問題や制限事項の記載
+   - 必要に応じて他のドキュメントも英語化を検討
 
 ## アクティブな決定事項
 

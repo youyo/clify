@@ -3,8 +3,8 @@
 
 import os
 import json
-import pytest
 import yaml
+import pytest
 from pathlib import Path
 
 

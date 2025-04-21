@@ -3,12 +3,9 @@
 
 import json
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
-import sys  # sysを追加
-import copy  # copyを追加
-
-import jsonschema
+import copy
 import requests
 import yaml
 
@@ -27,6 +24,7 @@ class OpenAPIParser:
         """
         self.file_path = file_path
         self.spec: Dict[str, Any] = {}
+        self.base_url: Optional[str] = None  # ベースURLを保持する属性を追加
 
     def parse(self) -> Dict[str, Any]:
         """
@@ -71,6 +69,8 @@ class OpenAPIParser:
         # URLかどうかを判定
         parsed_url = urlparse(self.file_path)
         if parsed_url.scheme in ["http", "https"]:
+            # ベースURLを保持 (スキーム + ホスト名)
+            self.base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
             # URLの場合はリクエストを送信
             response = requests.get(self.file_path)
             response.raise_for_status()
@@ -294,6 +294,10 @@ class OpenAPIParser:
         #     "OpenAPI 2.0 から 3.x への変換が完了しました。", file=sys.stderr
         # )  # デバッグ用出力削除
         return spec_v3
+
+    def get_base_url(self) -> Optional[str]:  # ベースURL取得メソッドを追加
+        """ロード元がURLの場合、そのベースURLを返す"""
+        return self.base_url
 
     def get_endpoints(self) -> List[Dict[str, Any]]:
         """

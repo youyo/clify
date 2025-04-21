@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import pytest
-from pathlib import Path
-
 from clify.parser import OpenAPIParser
 
 

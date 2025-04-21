@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import Any, Callable, Dict, List, Optional, Union
-
+from typing import Any, Callable, Dict, Optional
 import click
-
 from clify.handler import CommandHandler
 from clify.request import APIRequestExecutor
 
@@ -15,19 +13,45 @@ class CLIGenerator:
     OpenAPI仕様からCLIコマンドを生成するクラス
     """
 
-    def __init__(self, spec: Dict[str, Any]):
+    def __init__(
+        self, spec: Dict[str, Any], base_url: Optional[str] = None
+    ):  # base_url を追加
         """
         初期化
 
         Args:
             spec: OpenAPI仕様
+            base_url: OpenAPIファイルのロード元ベースURL (相対パス解決用)
         """
         self.spec = spec
+        self.base_url = base_url  # base_url を保持
         self.title = spec.get("info", {}).get("title", "API")
         self.description = spec.get("info", {}).get("description", "")
         self.servers = spec.get("servers", [])
-        self.default_server = self.servers[0]["url"] if self.servers else ""
+        # self.default_server = self.servers[0]["url"] if self.servers else "" # 下で解決処理を追加
+        self.default_server = self._resolve_default_server()  # メソッドで解決
         self.security_schemes = self._get_security_schemes()
+
+    def _resolve_default_server(self) -> str:
+        """servers定義からデフォルトサーバーURLを解決する"""
+        if not self.servers:
+            return ""
+
+        first_server = self.servers[0]
+        server_url = first_server.get("url", "")
+
+        # URLが相対パスの場合、base_urlと結合
+        if server_url.startswith("/") and self.base_url:
+            # base_url の末尾スラッシュを削除し、server_url の先頭スラッシュはそのまま結合
+            return self.base_url.rstrip("/") + server_url
+        elif not server_url.startswith(("http://", "https://")) and self.base_url:
+            # スキームがない場合も結合を試みる (より堅牢な結合が必要かも)
+            from urllib.parse import urljoin
+
+            return urljoin(self.base_url, server_url)
+        else:
+            # 絶対URLまたはbase_urlがない場合はそのまま返す
+            return server_url
 
     def generate(self) -> Callable:
         """
@@ -37,21 +61,23 @@ class CLIGenerator:
             Callable: 生成されたCLIコマンド
         """
 
-        # ルートコマンドグループを作成
+        # ルートコマンドグループを作成 (サーバーオプションと ctx.obj 設定を削除)
         @click.group(help=self.description)
-        @click.option(
-            "--server",
-            "-s",
-            default=self.default_server,
-            help="APIサーバーのURL",
-        )
-        @click.pass_context
-        def dynamic_cli(ctx: click.Context, server: str) -> None:
-            ctx.ensure_object(dict)
-            ctx.obj["server"] = server
+        # @click.option(
+        #     "--server",
+        #     "-s",
+        #     default=self.default_server,
+        #     help="APIサーバーのURL",
+        # )
+        # @click.pass_context # 不要に
+        # def dynamic_cli(ctx: click.Context, server: str) -> None:
+        #     ctx.ensure_object(dict)
+        #     ctx.obj["server"] = server
+        def dynamic_cli() -> None:  # 引数なしに変更
+            pass  # 何もしない
 
-        # 認証オプションを追加
-        self._add_auth_options(dynamic_cli)
+        # 認証オプションを追加 (これはサブコマンドレベルで必要になる可能性があるため、一旦残すか検討)
+        # self._add_auth_options(dynamic_cli) # 一旦コメントアウト
 
         # パスごとにサブコマンドを生成
         paths = self.spec.get("paths", {})
@@ -168,16 +194,49 @@ class CLIGenerator:
         request_body = operation.get("requestBody", {})
 
         # コマンド関数を定義
+        # default_server をデコレータの help 文字列で参照するため、ここで取得
+        current_default_server = self.default_server
+
         @click.command(name=command_name, help=help_text)
-        @click.pass_context
-        def command_func(ctx: click.Context, **kwargs: Any) -> None:
+        # サーバーオプションを各サブコマンドに追加
+        @click.option(
+            "--server",
+            "-s",
+            help=f"APIサーバーのURL (デフォルト: {current_default_server})",
+            # default 引数は使わず、関数内で処理する
+        )
+        # --- ここに認証オプションを追加するロジックが必要 ---
+        # 例: spec と operation から必要な認証スキームを特定し、
+        # 対応する @click.option を動的に追加する
+        # auth_decorator = self._get_auth_decorators(operation)
+        # command_func = auth_decorator(command_func) # デコレータを適用
+
+        def command_func(**kwargs: Any) -> None:
+            # spec と default_server を関数内で参照 (self を使う)
+            spec = self.spec
+            default_server = self.default_server  # インスタンス変数を参照
+
+            # kwargs から --server オプションの値を取得、なければデフォルト値
+            server_url = kwargs.pop("server", None)  # オプションが指定されなければ None
+            if server_url is None:
+                server_url = default_server  # デフォルト値を適用
+
+            # 認証パラメータを kwargs から抽出し、適切に処理する
+            # 例: api_key = kwargs.pop("api_key", None)
+            auth_params = {}  # 抽出した認証パラメータを格納
+            # ... (認証パラメータ抽出ロジック) ...
+
+            # 残りが API パラメータ
+            api_params = kwargs
+
             # コマンドハンドラーを作成
             handler = CommandHandler(
-                server=ctx.obj["server"],
+                server=server_url,
                 path=path,
                 method=method,
                 operation=operation,
-                params=kwargs,
+                params=api_params,
+                # auth_params=auth_params # 必要なら認証情報も渡す
             )
 
             # APIリクエストを実行

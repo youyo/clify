@@ -15,6 +15,7 @@
 - **CLI コマンド実行の問題解決完了**
   - `click.MultiCommand` を使用して動的サブコマンド実行に対応
   - OpenAPI 2.0 仕様の基本的なサポートを追加 (`parser.py`)
+  - リモート OpenAPI ファイルを指定してサブコマンドを実行できるように修正 (`cli.py`, `generator.py`, `parser.py`)
 
 ## 残りの作業
 
@@ -29,7 +30,7 @@
 - テスト実行済み（一部テストは修正済み）
 - サンプル OpenAPI ファイル (v2, v3) を使った動作確認済み
   - `swagger.yaml` (v2) で `get-inventory` 成功
-  - `petstore.yaml` (v3) で `list-pets` 実行試行 (404 エラーは API サーバー側の問題)
+  - `petstore.yaml` (v3) で `find-pets-by-status` 実行成功
 
 ## 既知の問題
 

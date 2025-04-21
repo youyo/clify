@@ -36,3 +36,8 @@ write_to = "src/clify/_version.py"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]

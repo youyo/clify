@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
 from unittest.mock import MagicMock, patch
-
 from clify.request import APIRequestExecutor
 from clify.handler import CommandHandler
 

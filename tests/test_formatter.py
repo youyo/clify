@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-import pytest
 from unittest.mock import MagicMock
-
 from clify.formatter import ResponseFormatter
 
 

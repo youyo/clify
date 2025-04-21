@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from typing import Any, Dict, Optional, Union
-
+from typing import Any
 import click
 import requests
 

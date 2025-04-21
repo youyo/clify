@@ -4,8 +4,7 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Union
-
+from typing import Any, Dict, Optional
 import click
 
 
@@ -17,7 +16,7 @@ class CommandHandler:
 
     def __init__(
         self,
-        server: str,
+        server: str,  # ctx の代わりに server を受け取るように戻す
         path: str,
         method: str,
         operation: Dict[str, Any],
@@ -33,7 +32,7 @@ class CommandHandler:
             operation: オペレーション情報
             params: コマンドラインパラメータ
         """
-        self.server = server
+        self.server = server  # server を保持するように戻す
         self.path = path
         self.method = method.upper()
         self.operation = operation
@@ -50,8 +49,14 @@ class CommandHandler:
         Returns:
             str: 構築されたURL
         """
+        # self.server を使うように戻す
+        server_url = self.server
+
+        if not server_url:
+            raise click.ClickException("APIサーバーのURLが設定されていません。")
+
         # サーバーURLの末尾のスラッシュを削除
-        server = self.server.rstrip("/")
+        server = server_url.rstrip("/")
 
         # パスの先頭のスラッシュを削除
         path = self.path.lstrip("/")

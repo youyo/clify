@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
 from click.testing import CliRunner
-
 from clify.parser import OpenAPIParser
 from clify.generator import CLIGenerator
 

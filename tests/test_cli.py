@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import pytest
 from click.testing import CliRunner
-
 from clify.cli import cli, main
 
 

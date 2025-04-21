@@ -2,11 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import json
-from typing import Any, Dict, Optional, Union
-
 import click
 import requests
-
 from clify.formatter import ResponseFormatter
 from clify.handler import CommandHandler
 

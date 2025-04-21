@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-
 from clify.handler import CommandHandler
 
 

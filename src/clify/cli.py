@@ -96,14 +96,15 @@ class DynamicCLI(click.MultiCommand):
 # --- cli 関数の修正 ---
 @click.command(cls=DynamicCLI)
 @click.version_option()
-# --- ↓↓↓ --openapi-file オプションを削除 ↓↓↓ ---
-# @click.option(
-#     "--openapi-file",
-#     "-f",
-#     help="OpenAPIファイルのパス（環境変数OPENAPI_FILE_PATHで指定してください）",
-#     required=False,
-# )
-# --- ↑↑↑ --openapi-file オプションを削除 ↑↑↑ ---
+# --- ↓↓↓ --openapi-file オプションを追加 ↓↓↓ ---
+@click.option(
+    "--openapi-file",
+    "-f",
+    help="OpenAPIファイルのパス（環境変数OPENAPI_FILE_PATHでも指定可能）",  # ヘルプメッセージを修正
+    required=False,  # 環境変数で指定できるため必須ではない
+    type=click.Path(exists=True, dir_okay=False),  # ファイルの存在チェックを追加
+)
+# --- ↑↑↑ --openapi-file オプションを追加 ↑↑↑ ---
 @click.option(
     "--server",
     "-s",
@@ -112,7 +113,7 @@ class DynamicCLI(click.MultiCommand):
 @click.pass_context
 def cli(
     ctx: click.Context,
-    # openapi_file: Optional[str] = None, # 引数を削除
+    openapi_file: Optional[str] = None,  # 引数を追加
     server: Optional[str] = None,
 ) -> None:
     """
@@ -129,41 +130,34 @@ def cli(
         click.echo("エラー: DynamicCLIのインスタンスを取得できませんでした。", err=True)
         sys.exit(1)
 
-    # --- ctx.obj の設定ロジックを削除 ---
-    # ctx.ensure_object(dict)
-    # default_server = ""
-    # if dynamic_cli_instance._spec:
-    #     servers = dynamic_cli_instance._spec.get("servers", [])
-    #     if (
-    #         servers
-    #         and isinstance(servers, list)
-    #         and len(servers) > 0
-    #         and servers[0].get("url")
-    #     ):
-    #         default_server = servers[0]["url"]
-    #     elif dynamic_cli_instance._spec.get("host"):
-    #         host = dynamic_cli_instance._spec.get("host")
-    #         basePath = dynamic_cli_instance._spec.get("basePath", "")
-    #         schemes = dynamic_cli_instance._spec.get("schemes", ["https"])
-    #         default_server = f"{schemes[0]}://{host}{basePath}"
-    # ctx.obj["server"] = server if server is not None else default_server
-    # dynamic_cli_instance.ctx_obj = ctx.obj # 削除
+    # --- ctx.obj の設定ロジックを generator.py に移動したので削除 ---
+
+    # --- OpenAPIファイルパスの処理 ---
+    # コマンドライン引数と環境変数の両方を考慮する
+    # DynamicCLI インスタンスにファイルパスを渡す
+    if openapi_file:
+        dynamic_cli_instance._openapi_file_path = openapi_file
+    else:
+        # 環境変数から取得する処理は _ensure_cli_generated 内で行われる
+        pass
 
     # --- OpenAPIファイル指定がない場合やエラー時のハンドリング ---
-    # list_commands/get_command が呼ばれる前にファイルパスを確認し、
-    # 指定がない場合はヘルプを表示して終了する。
-    # _ensure_cli_generated が呼ばれる前にチェックする。
-    actual_openapi_file = dynamic_cli_instance._get_openapi_file_path()  # ctx 不要
-    if not actual_openapi_file:
+    # _ensure_cli_generated が呼ばれる前にファイルパスの有無を確認
+    if (
+        not dynamic_cli_instance._openapi_file_path
+        and not dynamic_cli_instance._get_openapi_file_path()
+    ):
         if not ctx.invoked_subcommand:
+            # サブコマンドなし、ファイル指定なし -> ヘルプ表示
             click.echo(ctx.get_help())
             sys.exit(0)
         else:
-            # サブコマンドが指定されているのにファイルがない場合
+            # サブコマンドあり、ファイル指定なし -> エラー
             click.echo("エラー: OpenAPIファイルが指定されていません。", err=True)
             click.echo(
-                f"環境変数 'OPENAPI_FILE_PATH' で指定してください。", err=True
-            )  # メッセージ変更
+                "`--openapi-file` オプションまたは環境変数 `OPENAPI_FILE_PATH` で指定してください。",
+                err=True,
+            )
             sys.exit(1)
 
     # _ensure_cli_generated 内でエラーが発生した場合、空の Group が設定される。

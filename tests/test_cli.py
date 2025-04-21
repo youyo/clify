@@ -70,8 +70,9 @@ class TestCLI:
         runner = CliRunner()
         result = runner.invoke(cli, ["--openapi-file", "non_existent_file.yaml"])
 
-        assert result.exit_code == 1
-        assert "エラー" in result.output
+        assert result.exit_code == 2
+        assert "Error: Invalid value for '--openapi-file'" in result.output
+        assert "non_existent_file.yaml' does not exist" in result.output
 
     def test_main_function(self, monkeypatch):
         """main関数が正常に実行されることを確認"""

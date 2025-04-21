@@ -61,20 +61,19 @@ class CLIGenerator:
             Callable: 生成されたCLIコマンド
         """
 
-        # ルートコマンドグループを作成 (サーバーオプションと ctx.obj 設定を削除)
+        # ルートコマンドグループを作成
         @click.group(help=self.description)
-        # @click.option(
-        #     "--server",
-        #     "-s",
-        #     default=self.default_server,
-        #     help="APIサーバーのURL",
-        # )
-        # @click.pass_context # 不要に
-        # def dynamic_cli(ctx: click.Context, server: str) -> None:
-        #     ctx.ensure_object(dict)
-        #     ctx.obj["server"] = server
-        def dynamic_cli() -> None:  # 引数なしに変更
-            pass  # 何もしない
+        @click.option(
+            "--server",
+            "-s",
+            default=self.default_server,
+            help="APIサーバーのURL",
+            envvar="CLIFY_SERVER",  # 環境変数からも取得可能にする
+        )
+        @click.pass_context  # コンテキストを渡す
+        def dynamic_cli(ctx: click.Context, server: str) -> None:
+            ctx.ensure_object(dict)
+            ctx.obj["server"] = server  # コンテキストにサーバーURLを保存
 
         # 認証オプションを追加 (これはサブコマンドレベルで必要になる可能性があるため、一旦残すか検討)
         # self._add_auth_options(dynamic_cli) # 一旦コメントアウト
@@ -198,28 +197,17 @@ class CLIGenerator:
         current_default_server = self.default_server
 
         @click.command(name=command_name, help=help_text)
-        # サーバーオプションを各サブコマンドに追加
-        @click.option(
-            "--server",
-            "-s",
-            help=f"APIサーバーのURL (デフォルト: {current_default_server})",
-            # default 引数は使わず、関数内で処理する
-        )
         # --- ここに認証オプションを追加するロジックが必要 ---
         # 例: spec と operation から必要な認証スキームを特定し、
         # 対応する @click.option を動的に追加する
         # auth_decorator = self._get_auth_decorators(operation)
         # command_func = auth_decorator(command_func) # デコレータを適用
-
-        def command_func(**kwargs: Any) -> None:
-            # spec と default_server を関数内で参照 (self を使う)
+        @click.pass_context  # コンテキストを受け取る
+        def command_func(ctx: click.Context, **kwargs: Any) -> None:
+            # spec を関数内で参照 (self を使う)
             spec = self.spec
-            default_server = self.default_server  # インスタンス変数を参照
-
-            # kwargs から --server オプションの値を取得、なければデフォルト値
-            server_url = kwargs.pop("server", None)  # オプションが指定されなければ None
-            if server_url is None:
-                server_url = default_server  # デフォルト値を適用
+            # コンテキストからサーバーURLを取得
+            server_url = ctx.obj["server"]
 
             # 認証パラメータを kwargs から抽出し、適切に処理する
             # 例: api_key = kwargs.pop("api_key", None)
